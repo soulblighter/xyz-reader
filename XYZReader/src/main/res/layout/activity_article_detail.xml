@@ -18,21 +18,30 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
-            app:contentScrim="?attr/colorPrimaryDark"
             app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed"
-            app:titleEnabled="false">
+            app:titleEnabled="false"
+            app:contentScrim="?attr/colorPrimaryDark">
             <!--
-            app:contentScrim="?attr/colorPrimaryDark"
             app:expandedTitleMarginEnd="64dp"
             app:expandedTitleMarginStart="48dp"-->
 
-            <com.example.xyzreader.ui.DynamicHeightNetworkImageView
+            <!-- com.example.xyzreader.ui.DynamicHeightNetworkImageView -->
+            <!--suppress AndroidLintContentDescription -->
+            <ImageView
                 android:id="@+id/thumbnail"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/detail_photo_height"
                 android:scaleType="centerCrop"
                 app:layout_collapseMode="parallax"/>
             <!-- android:transitionName="thumbnail" -->
+
+            <!-- background protection -->
+            <View
+                android:id="@+id/backgroundProtection"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal|bottom"
+                android:background="@drawable/photo_background_protection"/>
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -42,6 +51,12 @@
                 app:titleTextColor="@color/theme_text_primary"
                 app:popupTheme="@style/AppTheme.PopupOverlay">
 
+                <ImageView
+                    android:id="@+id/logoView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/logo"
+                    android:layoutAnimation="@anim/fade_out"/>
             </android.support.v7.widget.Toolbar>
 
         </android.support.design.widget.CollapsingToolbarLayout>

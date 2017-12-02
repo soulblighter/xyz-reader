@@ -22,8 +22,10 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 
@@ -107,8 +109,8 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager
             public void onClick(View view) {
                 startActivity(Intent.createChooser(ShareCompat.IntentBuilder
                     .from(getActivity()).setType("text/plain").setText("Some " +
-                        "" + "sample text").getIntent(), getString(R.string
-                    .action_share)));
+                        "" + "" + "sample text").getIntent(), getString(R
+                    .string.action_share)));
             }
         });
 
@@ -138,7 +140,6 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager
         final TextView bodyView = mRootView.findViewById(R.id.article_body);
         final LinearLayout linerar1 = mRootView.findViewById(R.id.linerar1);
 
-
         if (mCursor != null) {
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
@@ -150,8 +151,8 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager
                     .getRelativeTimeSpanString(publishedDate.getTime(),
                         System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
                         DateUtils.FORMAT_ABBREV_ALL).toString() + " by <font " +
-                    "" + "color='#ffffff'>" + mCursor.getString(ArticleLoader
-                    .Query.AUTHOR) + "</font>"));
+                    "" + "" + "color='#ffffff'>" + mCursor.getString
+                    (ArticleLoader.Query.AUTHOR) + "</font>"));
 
             } else {
                 // If date is before 1902, just show the string
@@ -165,43 +166,52 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager
                 .Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
             //bodyView.setText(R.string.lorem_ipsum);
 
-            ImageLoaderHelper.getInstance(getActivity()).getImageLoader().get
-                (mCursor.getString(ArticleLoader.Query.PHOTO_URL), new
-                    ImageLoader.ImageListener() {
+            // [START] Glide
+            Glide.with(getActivity()).load(mCursor.getString(ArticleLoader
+                .Query.PHOTO_URL)).asBitmap().diskCacheStrategy
+                (DiskCacheStrategy.ALL).into(new SimpleTarget<Bitmap>(100,
+                (int) (100 * (1.0f / mCursor.getFloat(ArticleLoader.Query
+                    .ASPECT_RATIO)))) {
                 @Override
-                public void onResponse(ImageLoader.ImageContainer
-                                           imageContainer, boolean b) {
-                    Bitmap bitmap = imageContainer.getBitmap();
-                    if (bitmap != null) {
-                        Palette p = Palette.from(bitmap).generate();
-
-                        if (getActivity() == null || ArticleDetailFragment
-                            .this.isDetached() || !isAdded()) {
-                            return;
-                        }
-
-                        int newColor;
-                        if (p.getDarkVibrantSwatch() != null) {
-                            newColor = p.getDarkVibrantColor(getResources()
-                                .getColor(R.color.theme_primary_dark));
-                        } else {
-                            newColor = p.getDarkMutedColor(getResources()
-                                .getColor(R.color.theme_primary_dark));
-                        }
-                        animateBackgroundColor(linerar1, newColor);
-                    }
-                }
-
-                @Override
-                public void onErrorResponse(VolleyError volleyError) {
-
+                public void onResourceReady(final Bitmap resource,
+                                            GlideAnimation glideAnimation) {
+                    setHeaderColor(resource, linerar1);
                 }
             });
+            // [END] Glide
+
+
         } else {
             mRootView.setVisibility(View.GONE);
         }
     }
 
+    protected void setHeaderColor(final Bitmap bitmap, final View header) {
+        if (bitmap != null) {
+            Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+                @Override
+                public void onGenerated(Palette palette) {
+                    int colorValue;
+                    if (palette.getDarkVibrantSwatch() != null) {
+                        colorValue = palette.getDarkVibrantSwatch().getRgb();
+                    } else if (palette.getDarkMutedSwatch() != null) {
+                        colorValue = palette.getDarkMutedSwatch().getRgb();
+                    } else {
+                        // if we don't have DarkVibrant or DarkMuted,
+                        // then give up and leave default layout background
+                        // that should be R.color.theme_primary_dark
+                        return;
+                    }
+
+                    if (getActivity() == null || ArticleDetailFragment
+                        .this.isDetached() || !isAdded()) {
+                        return;
+                    }
+                    animateBackgroundColor(header, colorValue);
+                }
+            });
+        }
+    }
 
     protected void animateBackgroundColor(View view, int newColor) {
         if (view != null) {

@@ -8,6 +8,8 @@
                                     android:layout_marginEnd="4dp"
                                     android:layout_marginStart="4dp"
                                     android:layout_marginTop="4dp"
+                                    app:elevation="@dimen/card_elevation"
+                                    app:pressedTranslationZ="@dimen/card_press_translation_z"
                                     android:clickable="true"
                                     android:focusable="true"
                                     android:foreground="?selectableItemBackground">
@@ -17,8 +19,9 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- com.example.xyzreader.ui.DynamicHeightNetworkImageView -->
         <!--suppress AndroidLintContentDescription -->
-        <com.example.xyzreader.ui.DynamicHeightNetworkImageView
+        <ImageView
             android:id="@+id/thumbnail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,7 +30,6 @@
             android:background="@color/photo_placeholder"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"/>
-        <!-- android:transitionName="thumbnail" -->
 
         <TextView
             android:id="@+id/article_title"

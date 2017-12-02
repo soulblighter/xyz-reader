@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -21,8 +22,11 @@ import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
@@ -67,6 +71,8 @@ public class ArticleListActivity extends AppCompatActivity implements
         mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         mToolbar.setTitle(getTitle());
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayShowTitleEnabled(false);
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
 
@@ -265,52 +271,21 @@ public class ArticleListActivity extends AppCompatActivity implements
                     (ArticleLoader.Query.AUTHOR)));
             }
 
-            holder.thumbnailView.setImageUrl(mCursor.getString(ArticleLoader
-                .Query.THUMB_URL), ImageLoaderHelper.getInstance
-                (ArticleListActivity.this).getImageLoader());
-            //holder.thumbnailView.setAspectRatio(mCursor.getFloat
-            // (ArticleLoader.Query.ASPECT_RATIO));
+            // [START] Glide
+            Glide
+                .with(ArticleListActivity.this)
+                .load(mCursor.getString(ArticleLoader.Query.THUMB_URL))
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .animate(R.anim.fade_in).crossFade()
+                .override(640,
+                    (int)(640*(1/mCursor.getFloat(ArticleLoader.Query
+                        .ASPECT_RATIO))))
+                .into(holder.thumbnailView);
+            // [END] Glide
 
             String transitionName = getString(R.string.thumbnail_transition,
                 (int) mCursor.getLong(ArticleLoader.Query._ID));
             holder.thumbnailView.setTransitionName(transitionName);
-
-            /*ImageLoaderHelper.getInstance(ArticleListActivity.this)
-            .getImageLoader().get(mCursor.getString
-                (ArticleLoader.Query.THUMB_URL), new ImageLoader
-                .ImageListener() {
-                @Override
-                public void onResponse(ImageLoader.ImageContainer
-                imageContainer, boolean b) {
-                    if(imageContainer.getBitmap() != null) {
-                        Palette.from(imageContainer.getBitmap()).generate(new
-                         Palette.PaletteAsyncListener() {
-                            @Override
-                            public void onGenerated(Palette palette) {
-                                int colorValue = Color.WHITE;
-                                if (palette.getVibrantSwatch() != null) {
-                                    colorValue = palette.getVibrantSwatch()
-                                    .getRgb();
-                                } else if (palette.getLightVibrantSwatch() !=
-                                 null) {
-                                    colorValue = palette
-                                    .getLightVibrantSwatch().getRgb();
-                                } else if (palette.getDarkVibrantSwatch() !=
-                                null) {
-                                    colorValue = palette.getDarkVibrantSwatch
-                                    ().getRgb();
-                                }
-                                holder.cardView.setCardBackgroundColor
-                                (colorValue);
-                            }
-                        });
-                    }
-                }
-                @Override
-                public void onErrorResponse(VolleyError volleyError) {
-
-                }
-            });*/
         }
 
         @Override
@@ -322,7 +297,7 @@ public class ArticleListActivity extends AppCompatActivity implements
     public static class ArticleViewHolder extends RecyclerView.ViewHolder {
         public long id = -1;
         public final CardView cardView;
-        public final DynamicHeightNetworkImageView thumbnailView;
+        public final ImageView thumbnailView;
         public final TextView titleView;
         public final TextView subtitleView;
 

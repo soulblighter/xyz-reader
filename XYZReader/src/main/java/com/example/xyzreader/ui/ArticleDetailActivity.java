@@ -16,7 +16,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
@@ -36,7 +39,9 @@ public class ArticleDetailActivity extends AppCompatActivity implements
     private ViewPager mPager;
     private MyPagerAdapter mPagerAdapter;
     private Toolbar mToolbar;
-    private DynamicHeightNetworkImageView mPhotoView;
+    private ImageView mPhotoView;
+    private ImageView mLogoView;
+    private View mBackgroundProtection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +67,15 @@ public class ArticleDetailActivity extends AppCompatActivity implements
         });
 
 
+        mBackgroundProtection = findViewById(R.id.backgroundProtection);
+        Animation animation = AnimationUtils.loadAnimation(this,R.anim
+            .fade_in);
+        mBackgroundProtection.startAnimation(animation);
+
+        mLogoView = findViewById(R.id.logoView);
+        mLogoView.startAnimation(animation);
+
+
         mPhotoView = findViewById(R.id.thumbnail);
 
         getLoaderManager().initLoader(0, null, this);
@@ -78,10 +92,9 @@ public class ArticleDetailActivity extends AppCompatActivity implements
                 }
                 mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
 
-                changePhoto(mSelectedItemId, mCursor.getString(ArticleLoader
-                    .Query.THUMB_URL));
-                //mPhotoView.setAspectRatio(mCursor.getFloat(ArticleLoader
-                // .Query.ASPECT_RATIO));
+                changePhoto(mSelectedItemId,
+                    mCursor.getString(ArticleLoader.Query.THUMB_URL),
+                    mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
             }
         });
 
@@ -97,21 +110,26 @@ public class ArticleDetailActivity extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
         Animation slide_down = AnimationUtils.loadAnimation
             (getApplicationContext(), R.anim.slide_down);
         mPager.startAnimation(slide_down);
         //overridePendingTransition(0, 0);
+        super.onBackPressed();
     }
 
-    private void changePhoto(long id, String url) {
-        mPhotoView.setImageUrl(url, ImageLoaderHelper.getInstance
-            (ArticleDetailActivity.this).getImageLoader());
-        //mPhotoView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query
-        // .ASPECT_RATIO));
+    private void changePhoto(long id, String url, float aspectRatio) {
 
-        String transitionName = getString(R.string.thumbnail_transition,
-            (int) id);
+        // [START] Glide
+        Glide
+            .with(this)
+            .load(url)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .animate(R.anim.fade_in).crossFade()
+            .override(1024, (int)(1024*(1.0f/aspectRatio)))
+            .into(mPhotoView);
+        // [END] Glide
+
+        String transitionName = getString(R.string.thumbnail_transition, (int) id);
         mPhotoView.setTransitionName(transitionName);
     }
 
@@ -147,8 +165,9 @@ public class ArticleDetailActivity extends AppCompatActivity implements
                     mPager.setCurrentItem(mStartPos, false);
                     //mStartId = 0;
                 }
-                changePhoto(mCursor.getLong(ArticleLoader.Query._ID), mCursor
-                    .getString(ArticleLoader.Query.THUMB_URL));
+                changePhoto(mCursor.getLong(ArticleLoader.Query._ID),
+                    mCursor.getString(ArticleLoader.Query.THUMB_URL),
+                    mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
                 break;
             }
             mCursor.moveToNext();
