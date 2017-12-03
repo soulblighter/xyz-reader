@@ -119,13 +119,17 @@ public class ArticleDetailActivity extends AppCompatActivity implements
 
     private void changePhoto(long id, String url, float aspectRatio) {
 
+        final int imageWidth = 1024;
+        final int imageHeight = (int)(imageWidth*(1.0f/mCursor.getFloat(ArticleLoader.Query
+                .ASPECT_RATIO)));
+
         // [START] Glide
         Glide
             .with(this)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .animate(R.anim.fade_in).crossFade()
-            .override(1024, (int)(1024*(1.0f/aspectRatio)))
+            .override(imageWidth, imageHeight)
             .into(mPhotoView);
         // [END] Glide
 

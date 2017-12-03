@@ -28,6 +28,13 @@ public class UpdaterService extends IntentService {
     public static final String EXTRA_REFRESHING = "com.example.xyzreader" +
         ".intent.extra.REFRESHING";
 
+    public enum RefreshStatus {
+        NONE,
+        ERROR_NO_NETWORK,
+        STARTED,
+        FINISHED,
+    }
+
     public UpdaterService() {
         super(TAG);
     }
@@ -41,11 +48,13 @@ public class UpdaterService extends IntentService {
         NetworkInfo ni = cm.getActiveNetworkInfo();
         if (ni == null || !ni.isConnected()) {
             Log.w(TAG, "Not online, not refreshing.");
+            sendStickyBroadcast(new Intent(BROADCAST_ACTION_STATE_CHANGE)
+                    .putExtra(EXTRA_REFRESHING, RefreshStatus.ERROR_NO_NETWORK));
             return;
         }
 
         sendStickyBroadcast(new Intent(BROADCAST_ACTION_STATE_CHANGE)
-            .putExtra(EXTRA_REFRESHING, true));
+            .putExtra(EXTRA_REFRESHING, RefreshStatus.STARTED));
 
         // Don't even inspect the intent, we only do one thing, and that's
         // fetch content.
@@ -94,6 +103,6 @@ public class UpdaterService extends IntentService {
         }
 
         sendStickyBroadcast(new Intent(BROADCAST_ACTION_STATE_CHANGE)
-            .putExtra(EXTRA_REFRESHING, false));
+            .putExtra(EXTRA_REFRESHING, RefreshStatus.FINISHED));
     }
 }

@@ -13,4 +13,5 @@
     <dimen name="card_elevation">2dp</dimen>
     <dimen name="card_press_translation_z">6dp</dimen> <!-- total 8dp -->
 
+    <dimen name="page_height">400dp</dimen>
 </resources>

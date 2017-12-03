@@ -12,10 +12,12 @@ public class Config {
     static {
         URL url = null;
         try {
+            url = new URL("https://go.udacity.com/xyz-reader-json" );
             // https://discussions.udacity
             // .com/t/xyzreader-not-showing-any-data-please-look-here/228886
-            //url = new URL("https://go.udacity.com/xyz-reader-json" );
-            url = new URL("https://nspf.github.io/XYZReader/data.json");
+            //url = new URL("https://nspf.github.io/XYZReader/data.json");
+            // URL from review 2
+            //url = new URL("https://raw.githubusercontent.com/TNTest/xyzreader/master/data.json");
         } catch (MalformedURLException ignored) {
             // TODO: throw a real error
             Log.e(TAG, "Please check your internet connection.");

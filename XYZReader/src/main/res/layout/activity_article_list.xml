@@ -5,7 +5,8 @@
 
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:id="@+id/coordinatorLayout">
         <!--android:fitsSystemWindows="true"-->
 
         <android.support.design.widget.AppBarLayout
@@ -18,6 +19,7 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
+                app:layout_scrollFlags="scroll|enterAlways"
                 app:titleTextColor="@color/theme_text_primary">
                 <ImageView
                     android:layout_width="wrap_content"

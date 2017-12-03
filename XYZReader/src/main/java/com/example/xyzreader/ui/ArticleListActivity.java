@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -117,9 +118,34 @@ public class ArticleListActivity extends AppCompatActivity implements
         public void onReceive(Context context, Intent intent) {
             if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent
                 .getAction())) {
-                mIsRefreshing = intent.getBooleanExtra(UpdaterService
-                    .EXTRA_REFRESHING, false);
-                updateRefreshingUI();
+
+                if(intent.getExtras().get(UpdaterService.EXTRA_REFRESHING) instanceof Boolean) {
+                    return;
+                }
+
+                UpdaterService.RefreshStatus status = (UpdaterService.RefreshStatus)intent
+                        .getSerializableExtra(UpdaterService.EXTRA_REFRESHING);
+
+                switch (status) {
+                    case STARTED:
+                        mIsRefreshing = true;
+                        updateRefreshingUI();
+                        Snackbar.make(findViewById(R.id.coordinatorLayout),
+                                R.string.update_started, Snackbar.LENGTH_SHORT).show();
+                        break;
+                    case FINISHED:
+                        mIsRefreshing = false;
+                        updateRefreshingUI();
+                        Snackbar.make(findViewById(R.id.coordinatorLayout),
+                                R.string.update_finished, Snackbar.LENGTH_SHORT).show();
+                        break;
+                    case ERROR_NO_NETWORK:
+                        mIsRefreshing = false;
+                        updateRefreshingUI();
+                        Snackbar.make(findViewById(R.id.coordinatorLayout),
+                                R.string.update_error_no_network, Snackbar.LENGTH_SHORT).show();
+                        break;
+                }
             }
         }
     };
@@ -271,15 +297,29 @@ public class ArticleListActivity extends AppCompatActivity implements
                     (ArticleLoader.Query.AUTHOR)));
             }
 
+            final int imageWidth = 512;
+            final int imageHeight = (int)(imageWidth*(1.0f/mCursor.getFloat(ArticleLoader.Query
+                    .ASPECT_RATIO)));
+
+            //int t = holder.thumbnailView.getLayoutParams().width;
+
+            /*holder.thumbnailView.getLayoutParams().width = imageWidth;
+            //holder.thumbnailView.getLayoutParams().height = imageHeight;
+            holder.thumbnailView.getLayoutParams().height =
+                    holder.thumbnailView.getLayoutParams().width *
+                            (int)(imageWidth*(1/mCursor.getFloat(ArticleLoader.Query
+                                    .ASPECT_RATIO)));*/
+
+            holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query
+                    .ASPECT_RATIO));
+
             // [START] Glide
             Glide
                 .with(ArticleListActivity.this)
                 .load(mCursor.getString(ArticleLoader.Query.THUMB_URL))
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .animate(R.anim.fade_in).crossFade()
-                .override(640,
-                    (int)(640*(1/mCursor.getFloat(ArticleLoader.Query
-                        .ASPECT_RATIO))))
+                .override(imageWidth, imageHeight)
                 .into(holder.thumbnailView);
             // [END] Glide
 
@@ -297,7 +337,7 @@ public class ArticleListActivity extends AppCompatActivity implements
     public static class ArticleViewHolder extends RecyclerView.ViewHolder {
         public long id = -1;
         public final CardView cardView;
-        public final ImageView thumbnailView;
+        public final DynamicHeightImageView thumbnailView;
         public final TextView titleView;
         public final TextView subtitleView;
 

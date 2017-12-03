@@ -6,20 +6,27 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -139,6 +146,8 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager
         bylineView.setMovementMethod(new LinkMovementMethod());
         final TextView bodyView = mRootView.findViewById(R.id.article_body);
         final LinearLayout linerar1 = mRootView.findViewById(R.id.linerar1);
+        final RecyclerView recyclerView = mRootView.findViewById(R.id.article_body_list);
+        final ProgressBar progressBar = mRootView.findViewById(R.id.progressBar);
 
         if (mCursor != null) {
             mRootView.setAlpha(0);
@@ -162,8 +171,8 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager
 
             }
 
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader
-                .Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
+            //bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader
+            //    .Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
             //bodyView.setText(R.string.lorem_ipsum);
 
             // [START] Glide
@@ -180,7 +189,14 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager
             });
             // [END] Glide
 
+            LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+            //layoutManager.setAutoMeasureEnabled(true);
+            recyclerView.setLayoutManager(layoutManager);
+            //recyclerView.setNestedScrollingEnabled(false);
 
+            recyclerView.setAdapter(new PageAdapter(getActivity(),
+                    mCursor.getString(ArticleLoader.Query.BODY),
+                    linerar1, progressBar));
         } else {
             mRootView.setVisibility(View.GONE);
         }
@@ -262,5 +278,4 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager
         mCursor = null;
         bindViews();
     }
-
 }
